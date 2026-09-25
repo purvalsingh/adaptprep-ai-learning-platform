@@ -1,258 +1,121 @@
-# AdaptPrep - AI-Powered Exam Preparation Platform
+# AdaptPrep: AI-powered JEE & NEET preparation
 
-👉 See MY_CONTRIBUTION.md for my role in this project
+👉 See [MY_CONTRIBUTION.md](MY_CONTRIBUTION.md) for my role in this project.
 
-A comprehensive full-stack web application designed to help students prepare for competitive exams (JEE/NEET) with AI-powered personalized coaching and comprehensive performance analytics.
+AdaptPrep is a full-stack exam-preparation platform for **students, teachers and administrators**. It finds where each student loses marks, then adapts the next test, the study plan and the explanations around it.
 
-## 🌟 Key Features
+It runs with **zero configuration**: no database server, no API keys. A built-in AI engine powers every AI feature, and you can add a Gemini key to upgrade open-ended conversations to a large language model.
 
-### 📚 Comprehensive Test Preparation
-- **Mock Tests**: Practice with authentic JEE and NEET exams
-- **Multiple Subjects**: Physics, Chemistry, Mathematics (JEE) and Biology (NEET)
-- **Detailed Solutions**: Step-by-step explanations for every question
-- **Question Bank**: 1000+ carefully curated questions from various exam patterns
+| Student dashboard (dark) | Exam-style test runner |
+|---|---|
+| ![Student dashboard](docs/screenshots/student-dashboard-dark.png) | ![Test runner](docs/screenshots/test-runner.png) |
+| **AI explanation of a mistake** | **Teacher: AI class insights** |
+| ![AI explanation](docs/screenshots/ai-explanation.png) | ![Class insights](docs/screenshots/teacher-class-insights.png) |
 
-### 🤖 AI-Powered Study Coach
-- **Intelligent Chatbot**: Powered by Google Gemini AI
-- **Personalized Help**: Context-aware responses based on your test history
-- **Weak Point Analysis**: AI identifies and helps improve weak areas
-- **Instant Doubt Resolution**: Get answers to your questions anytime
+## Quick start
 
-### 📊 Advanced Analytics Dashboard
-- **Performance Tracking**: Monitor your progress with detailed metrics
-- **Subject-wise Analysis**: Track performance in each subject
-- **Strong/Weak Subject Identification**: Know where you excel and where to focus
-- **Score Trends**: Visualize your improvement over time
-- **Accuracy Metrics**: Understand your correct/incorrect/skipped ratios
+Requires Node.js 18 or newer.
 
-### 👤 User Profile & Management
-- **Profile Customization**: Set up your profile with avatar and exam details
-- **Progress History**: Access all your test results and scores
-- **Subject Performance**: View detailed statistics for each subject
-- **Learning Journey**: Track your learning progress from day one
-
-### 🔐 Secure Authentication
-- **JWT-based Security**: Secure token-based authentication
-- **Password Encryption**: Bcrypt password hashing
-- **Data Privacy**: All user data is securely stored and protected
-
-## 🏗️ Project Structure
-
-```
-project/
-├── backend/
-│   ├── models/          # Database schemas
-│   ├── routes/          # API endpoints
-│   ├── middleware/      # Authentication & validation
-│   ├── data/           # Question bank data
-│   └── server.js       # Express server setup
-├── frontend/
-│   ├── src/
-│   │   ├── components/ # React components
-│   │   ├── pages/      # Page components
-│   │   ├── contexts/   # Context API
-│   │   └── styles/     # CSS stylesheets
-│   └── public/         # Static assets
-└── README.md           # This file
+```bash
+npm run setup      # install backend + frontend dependencies
+npm run dev        # API on :5000, web app on http://localhost:3000
 ```
 
-## 🚀 Tech Stack
+On first start the server seeds 600 questions and a demo workspace. On the sign-in page, use one-click demo accounts or enter:
 
-### Frontend
-- **React** - UI library
-- **React Router** - Client-side routing
-- **Context API** - State management
-- **Recharts** - Data visualization
-- **Lucide Icons** - Icon library
-- **CSS3** - Styling and animations
+| Role    | Email                   | Password      |
+|---------|-------------------------|---------------|
+| Student | `student@adaptprep.dev` | `Student@123` |
+| Student (NEET) | `neet@adaptprep.dev` | `Student@123` |
+| Teacher | `teacher@adaptprep.dev` | `Teacher@123` |
+| Admin   | `admin@adaptprep.dev`   | `Admin@123`   |
 
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - Database
-- **Mongoose** - ODM for MongoDB
-- **JWT** - Authentication
-- **Bcrypt** - Password hashing
-- **Google Gemini API** - AI-powered coaching
+Class join codes in the demo: `JEE27A` (JEE) and `NEET27` (NEET).
 
-## 📋 Features Breakdown
+**Production (single server):**
 
-### User Authentication
-- ✅ Sign up with email and password
-- ✅ Secure login with JWT tokens
-- ✅ Password encryption with bcrypt
-- ✅ Session management
-
-### Dashboard
-- ✅ Overview of test statistics
-- ✅ Quick links to key features
-- ✅ Recent test results
-- ✅ Strong subjects display
-- ✅ Learning progress summary
-
-### Mock Tests
-- ✅ Subject selection (Physics, Chemistry, Math/Biology)
-- ✅ Multiple test variations
-- ✅ 10-minute timer for each test
-- ✅ Question-based navigation
-- ✅ Instant result display
-- ✅ Answer comparison with correct answers
-
-### Performance Analysis
-- ✅ Overall accuracy metrics
-- ✅ Subject-wise performance breakdown
-- ✅ Pie charts and bar charts
-- ✅ Question status analysis (correct/incorrect/skipped)
-- ✅ Score trends over time
-- ✅ Recent test history
-
-### Insights Page
-- ✅ Comprehensive performance analytics
-- ✅ Subject-wise accuracy tracking
-- ✅ Strengths and weaknesses identification
-- ✅ Improvement recommendations
-- ✅ Test completion statistics
-- ✅ Visual performance dashboard
-
-### Detailed Solutions
-- ✅ Complete explanation for each question
-- ✅ Correct answer highlighting
-- ✅ User's answer comparison
-- ✅ Topic classification
-- ✅ Difficulty level display
-- ✅ Save solutions for future reference
-
-### AI Study Coach
-- ✅ Interactive chat interface
-- ✅ Personalized responses based on test history
-- ✅ Context-aware suggestions
-- ✅ Doubt resolution
-- ✅ Study tips and strategies
-- ✅ Performance improvement advice
-
-### User Profile
-- ✅ Profile information display
-- ✅ Avatar selection
-- ✅ Test statistics summary
-- ✅ Account information
-- ✅ Strong subjects list
-- ✅ Learning journey overview
-
-## 🔧 API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - Register new user
-- `POST /api/auth/login` - User login
-
-### User Management
-- `GET /api/user/profile` - Get user profile and data
-- `PUT /api/user/profile` - Update profile
-- `POST /api/user/test-results` - Save test results
-
-### Questions
-- `GET /api/questions` - Get exam structure
-- `GET /api/questions/:examType/:subject` - Get subject questions
-
-### AI Chat
-- `POST /api/chat/initialize` - Start new chat session
-- `POST /api/chat/send` - Send message to AI coach
-- `GET /api/chat/sessions` - Get session history
-- `GET /api/chat/session/:sessionId` - Get session messages
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v14+)
-- npm or yarn
-- MongoDB (local or Atlas)
-- Google Gemini API key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd project
-   ```
-
-2. **Backend Setup**
-   ```bash
-   cd backend
-   npm install
-   cp .env.example .env
-   # Edit .env with your configuration
-   npm run dev
-   ```
-
-3. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   npm start
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend: http://localhost:5000
-
-## 📖 Environment Variables
-
-### Backend (.env)
-```
-MONGODB_URI=mongodb://localhost:27017/adaptprep
-JWT_SECRET=your_jwt_secret_key
-GEMINI_API_KEY=your_gemini_api_key
-PORT=5000
-CORS_ORIGIN=http://localhost:3000
-NODE_ENV=development
+```bash
+npm run setup && npm run build
+JWT_SECRET=<long-random-string> npm start     # serves the app and API on :5000
 ```
 
-## 🎯 Supported Exams
+Other commands: `npm test` (API test suite), `npm run reset-data` (wipe and re-seed on next start).
 
-- **JEE (Joint Entrance Examination)**
-  - Subjects: Physics, Chemistry, Mathematics
-  
-- **NEET (National Eligibility cum Entrance Test)**
-  - Subjects: Physics, Chemistry, Biology
+## What each role can do
 
-## 📱 Responsive Design
+### Students
+- **Practice modes**: AI Adaptive (weighted to weak and unexplored topics), full mock (10 per subject), custom tests (subject, topics, difficulty), revision of past mistakes, and 60 practice sets.
+- **Exam-grade test runner**: +4/−1 marking, server-enforced timer, question palette, mark-for-review, keyboard shortcuts, autosave (resumes after a refresh or crash) and auto-submit when time is up.
+- **Results**: marks, accuracy, per-subject breakdown, full solution review, **"Why was I wrong?" AI explanations** and bookmarks.
+- **Analytics**: readiness index, score trend, topic mastery, accuracy by subject and difficulty, time per question, streaks and an activity heatmap.
+- **AI Tutor**: chat that knows your results. Ask "How am I doing?", "Explain projectile motion", "Formulas for electrochemistry", "Review my mistakes" or "Quiz me". A floating assistant is available on every page.
+- **AI study plan**: a 7-day plan rebuilt from your latest results, with one-click practice and progress ticks.
+- **Revision notebook**: open mistakes plus bookmarked questions, re-attemptable in place.
+- **Classes**: join with a code, take assignments, and see announcements and a class leaderboard.
 
-The application is fully responsive and works seamlessly on:
-- Desktop computers
-- Tablets
-- Mobile phones
+### Teachers
+- Create classes with shareable join codes (regenerate or archive at any time), and manage the roster.
+- **Assignments**: auto-pick by subject, topic and difficulty, or hand-pick from the bank. Set a due date, time limit and retake policy.
+- **Assignment reports**: submission status (on time, late, missed), score stats, and per-question analysis showing which wrong option students chose.
+- **AI class insights**: at-risk students, weakest and strongest class topics, and suggested next actions.
+- Drill down into any student's full analytics and submitted answers.
+- **Question bank**: write questions, or **generate verified questions with AI**, review them, and save.
+- AI assistant for class summaries and question drafting, plus class announcements.
 
-## 🔒 Security Features
+### Admins
+- Platform overview: users, weekly activity, sign-ups, tests by subject and top students.
+- **User management**: search and filter, create any role, change role, suspend or reactivate, reset password (one-time temporary password), delete.
+- Oversight of every class, moderation of the full question bank (edit, archive, restore) and platform-wide announcements.
+- **Audit log** of sensitive actions, and a **System & AI** page showing runtime and AI provider status.
 
-- JWT-based authentication
-- Password encryption with bcrypt
-- Input validation and sanitization
-- CORS protection
-- Rate limiting on API endpoints
-- Secure data storage in MongoDB
+## The AI
 
-## 🤝 Contributing
+`backend/ai/` contains **AdaptPrep Local AI**, a deterministic engine that needs no network access:
 
-We welcome contributions to improve AdaptPrep. Please follow these steps:
+| Capability | How it works |
+|---|---|
+| Tutor chat | Intent detection routes each message to performance analysis, study planning, mistake review, interactive quizzes (it remembers the pending question and grades your reply), exam strategy, or concept explanations. |
+| Concept answers | TF-IDF retrieval over 53 curated syllabus notes (formulas and exam tips) and the question bank's worked solutions. |
+| Explanations | Combines the solution, the concept, relevant formulas and why the chosen option was wrong. |
+| Study plan and class insights | Computed from real analytics (topic accuracy, coverage, time, streaks, inactivity). |
+| Question generation | 20 parametric templates across all four subjects. Answers are computed, and distractors are built from common mistakes, so every answer key is correct by construction. |
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+Set `GEMINI_API_KEY` in `backend/.env` to route open-ended chat and explanations to Google Gemini. Data-driven features (analytics, plans, quizzes, class insights) always stay local so they stay accurate. Any Gemini failure falls back to the local engine automatically.
 
-## 📄 License
+## Security and fairness
 
-This project is licensed under the MIT License.
+- Correct answers and explanations **never reach the browser before submission**. Grading and time limits are enforced on the server, and expired tests are auto-submitted by a background sweeper.
+- Role-based access on every endpoint. Teachers only see students in their own classes. Students can only bookmark questions they have already attempted.
+- bcrypt password hashing. JWT sessions are revoked immediately on password change, role change or suspension.
+- Admin accounts can't be self-registered, and the last active admin can't be demoted, suspended or deleted.
+- Rate limiting on sign-in and AI endpoints, security headers, input validation and length limits, and constant-time sign-in for unknown emails.
+- Sensitive actions are written to an audit log.
 
-## 📞 Support
+The API test suite (`npm test`) covers these guarantees end to end.
 
-For issues, questions, or suggestions, please create an issue in the repository.
+## Architecture
 
-## 🎓 Educational Purpose
+```
+backend/                  Express API (Node 18+)
+  ai/                     Local AI engine, knowledge base, retrieval, generator, Gemini provider
+  db/store.js             Embedded JSON document store (atomic writes to storage/db.json)
+  db/seed.js              Question bank import + demo workspace
+  routes/                 auth, me, tests, analytics, classes, assignments, questions, ai, announcements, admin, public
+  services/               attempts & grading, analytics, access control, audit
+  data/subjects/          600 JEE/NEET questions with solutions
+  test/api.test.js        End-to-end API tests (node:test)
+frontend/                 React 18 + Vite + React Router + Recharts
+  src/pages/{public,student,teacher,admin,shared}
+  src/components/         UI kit, charts, chat panel, analytics view, question editor
+  src/styles/app.css      Design system (light/dark tokens, CVD-validated chart palette)
+```
 
-AdaptPrep is designed as an educational tool to help students prepare for competitive exams with AI-powered personalized coaching and comprehensive analytics.
+The datastore is a single JSON file, which suits a single-server deployment. The `Store` interface (`find`, `insert`, `update`, `remove`) is the seam for swapping in MongoDB or PostgreSQL later.
 
----
+## Configuration (`backend/.env`, all optional)
 
-**Last Updated**: February 2026
-**Version**: 1.0.0
+See [`backend/.env.example`](backend/.env.example): `PORT`, `JWT_SECRET` (auto-generated and persisted if unset; set it in production), `JWT_EXPIRE`, `CORS_ORIGIN`, `DB_FILE` (`:memory:` for throwaway data), `SEED_DEMO=false` with `ADMIN_EMAIL`/`ADMIN_PASSWORD` for a clean install, `GEMINI_API_KEY`, `GEMINI_MODEL`.
+
+## License
+
+MIT

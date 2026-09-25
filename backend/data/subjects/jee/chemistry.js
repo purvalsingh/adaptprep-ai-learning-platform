@@ -54,11 +54,11 @@ const jeeChemistryQuestions = {
             id: 6,
             question: "Which has the highest first ionization energy?",
             options: ["Na", "Mg", "Al", "Si"],
-            correct: 1,
+            correct: 3,
             topic: "Periodic Trends",
             difficulty: "medium",
-            theory: "First ionization energy generally increases across a period. Mg has a complete 3s² subshell, making it more stable and harder to remove an electron compared to Al which has 3s²3p¹.",
-            explanation: "Mg has higher ionization energy than Al because Mg has a filled 3s² subshell."
+            theory: "First ionization energy generally increases across a period as effective nuclear charge rises. There is one exception here: Mg (filled 3s²) is higher than Al (3s²3p¹), because Al's 3p electron is shielded and easier to remove.",
+            explanation: "Order: Si (786 kJ/mol) > Mg (738) > Al (577) > Na (496). Si is highest; note the Mg > Al anomaly caused by Mg's filled 3s² subshell."
         },
         {
             id: 7,

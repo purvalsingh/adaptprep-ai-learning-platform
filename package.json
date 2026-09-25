@@ -1,0 +1,17 @@
+{
+    "name": "adaptprep",
+    "version": "2.0.0",
+    "private": true,
+    "description": "AI-powered JEE & NEET preparation for students, teachers and admins.",
+    "scripts": {
+        "setup": "npm --prefix backend install && npm --prefix frontend install",
+        "dev": "node scripts/dev.js",
+        "build": "npm --prefix frontend run build",
+        "start": "npm --prefix backend start",
+        "test": "npm --prefix backend test",
+        "reset-data": "npm --prefix backend run reset-data"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
