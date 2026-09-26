@@ -20,7 +20,10 @@ const COLLECTIONS = [
     'audit'
 ];
 
-const DEFAULT_FILE = path.join(__dirname, '..', 'storage', 'db.json');
+// Vercel's filesystem is read-only except /tmp (which is ephemeral per instance).
+const DEFAULT_FILE = process.env.VERCEL
+    ? '/tmp/adaptprep-db.json'
+    : path.join(__dirname, '..', 'storage', 'db.json');
 
 class Store {
     constructor(file = process.env.DB_FILE || DEFAULT_FILE) {
