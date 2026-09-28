@@ -9,5 +9,6 @@ export default defineConfig({
         proxy: { '/api': { target: process.env.VITE_API_PROXY || 'http://localhost:5000', changeOrigin: true } }
     },
     preview: { port: 3000 },
-    build: { chunkSizeWarningLimit: 1200 }
+    // "build" (not Vite's default "dist") so hosts expecting that folder, like Vercel, find it.
+    build: { outDir: 'build', chunkSizeWarningLimit: 1200 }
 });

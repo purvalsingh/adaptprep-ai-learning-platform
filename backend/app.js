@@ -32,7 +32,7 @@ const createApp = () => {
     app.use('/api', notFoundApi);
 
     // In production the backend also serves the built frontend (single deployable).
-    const dist = path.join(__dirname, '..', 'frontend', 'dist');
+    const dist = path.join(__dirname, '..', 'frontend', 'build');
     if (fs.existsSync(path.join(dist, 'index.html'))) {
         app.use(express.static(dist, { index: false, maxAge: '1h' }));
         app.get('*', (req, res) => res.sendFile(path.join(dist, 'index.html')));
