@@ -1,65 +1,17 @@
-# Dependencies
 node_modules/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
 
-# Environment variables
-# .env
-# .env.local
-# .env.*.local
-# .env.example
-# IDE & Editor
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Runtime data (created on first start)
+storage/
+
+# Editors / OS
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
 .DS_Store
-
-# OS
 Thumbs.db
-.DS_Store
-
-# Logs
-logs/
 *.log
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage
-coverage/
-.nyc_output/
-
-# Cache
-.eslintcache
-.cache/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Build files
-dist/
-build/
-
-# PM2
-ecosystem.config.js.bak

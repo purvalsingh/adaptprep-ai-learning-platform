@@ -1,51 +1,6 @@
-# Dependencies
 node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-
-# Production
-/build
-/dist
-
-# Misc
-.DS_Store
+dist/
 .env
 .env.local
-.env.example
-
-.env.development.local
-.env.test.local
-.env.production.local
-
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# OS
-Thumbs.db
 .DS_Store
-
-# Cache
-.cache/
-.eslintcache
-
-# Lock files (optional - uncomment if you want to commit lock files)
-# package-lock.json
-# yarn.lock
+*.log

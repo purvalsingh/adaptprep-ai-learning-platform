@@ -1,43 +1,31 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
-const app = express();
+const { getStore } = require('./db/store');
+const { seed } = require('./db/seed');
+const { sweepExpired } = require('./services/attempts');
+const { createApp } = require('./app');
+const ai = require('./ai');
 
-// Middleware
-app.use(express.json());
-app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    credentials: true
-}));
+const store = getStore();
+seed();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log('MongoDB connection error:', err));
-
-// Import routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user');
-const questionRoutes = require('./routes/questions');
-const chatRoutes = require('./routes/chat');
-
-// Use routes
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/questions', questionRoutes);
-app.use('/api/chat', chatRoutes);
-
-// Test endpoint
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'Backend is working!' });
-});
-
+const app = createApp();
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+
+const server = app.listen(PORT, () => {
+    console.log(`AdaptPrep API running on http://localhost:${PORT}`);
+    console.log(`AI provider: ${ai.status().label}`);
+    console.log(`Data file: ${store.inMemory ? 'in-memory' : store.file}`);
 });
+
+// Auto-submit tests whose timer ran out even if the student closed the tab.
+const sweeper = setInterval(sweepExpired, 30 * 1000);
+
+const shutdown = () => {
+    clearInterval(sweeper);
+    store.flush();
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 2000).unref();
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
