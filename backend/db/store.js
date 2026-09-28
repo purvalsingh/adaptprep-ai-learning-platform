@@ -5,16 +5,19 @@
 // with zero external services while still behaving like a small database.
 // Set DB_FILE=":memory:" to disable persistence (used by the test suite).
 //
-// When Upstash Redis credentials are present (UPSTASH_REDIS_REST_URL/TOKEN or
-// Vercel's KV_REST_API_URL/TOKEN) the data is persisted to Redis instead, so it
-// survives serverless restarts and is shared by every instance. The API stays
-// synchronous: pull() refreshes memory before a request and push() writes the
-// records that changed before the response is sent (see middleware/sync.js).
+// With a hosted database the data is persisted there instead, so it survives
+// serverless restarts and is shared by every instance: MongoDB when
+// MONGODB_URI is set (e.g. Atlas), otherwise Upstash Redis when its
+// credentials are present (UPSTASH_REDIS_REST_URL/TOKEN or Vercel's
+// KV_REST_API_URL/TOKEN). The API stays synchronous: pull() refreshes memory
+// before a request and push() writes the records that changed before the
+// response is sent (see middleware/sync.js).
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { redisConfig, createRedis } = require('./redis');
+const { mongoConfig, createMongo } = require('./mongo');
 
 const COLLECTIONS = [
     'users',
@@ -45,64 +48,79 @@ let seqCounter = 0;
 const nextSeq = () => Date.now() * 1000 + (seqCounter++ % 1000);
 
 class Store {
-    constructor(file = process.env.DB_FILE || DEFAULT_FILE, { redis = null } = {}) {
+    constructor(file = process.env.DB_FILE || DEFAULT_FILE, { redis = null, mongo = null } = {}) {
         this.redis = redis;
-        this.file = redis ? `redis:${PREFIX}` : file;
-        this.inMemory = !redis && file === ':memory:';
+        this.mongo = mongo;
+        this.file = mongo ? `mongodb:${mongo.name}` : redis ? `redis:${PREFIX}` : file;
+        this.inMemory = !this.remote && file === ':memory:';
         this.data = { meta: {} };
         COLLECTIONS.forEach((c) => { this.data[c] = []; });
         this.saveTimer = null;
-        // Redis mode: what was last read from / written to Redis, for diffing.
+        // Hosted mode: what was last read from / written to the database, for diffing.
         this.version = null;
         this.snapshot = { meta: '{}', cols: {} };
         COLLECTIONS.forEach((c) => { this.snapshot.cols[c] = new Map(); });
-        if (!redis) this.load();
+        if (!this.remote) this.load();
     }
 
     get remote() {
-        return Boolean(this.redis);
+        return Boolean(this.redis || this.mongo);
     }
 
-    // Reload everything from Redis if another request/instance changed it.
+    // Reload everything from the database if another request/instance changed it.
     async pull({ force = false } = {}) {
-        if (!this.redis) return;
+        if (!this.remote) return;
         if (!force && this.version !== null) {
-            const [current] = await this.redis.pipeline([['GET', KEYS.version]]);
-            if (Number(current || 0) === this.version) return;
+            const current = this.mongo
+                ? await this.mongo.version()
+                : Number((await this.redis.pipeline([['GET', KEYS.version]]))[0] || 0);
+            if (current === this.version) return;
         }
-        const results = await this.redis.transaction([
+        this.apply(this.mongo ? await this.mongo.load() : await this.loadRedis());
+    }
+
+    async loadRedis() {
+        const [version, meta, ...flats] = await this.redis.transaction([
             ['GET', KEYS.version],
             ['GET', KEYS.meta],
             ...COLLECTIONS.map((c) => ['HGETALL', KEYS.col(c)])
         ]);
-        const [version, meta, ...cols] = results;
-        this.data = { meta: meta ? JSON.parse(meta) : {} };
-        this.snapshot = { meta: meta || '{}', cols: {} };
+        const cols = {};
         COLLECTIONS.forEach((c, i) => {
-            const flat = cols[i] || [];
-            const rows = [];
-            const snap = new Map();
+            const flat = flats[i] || [];
+            cols[c] = [];
             for (let j = 0; j < flat.length; j += 2) {
                 const [seq, doc] = JSON.parse(flat[j + 1]);
-                rows.push({ seq, doc });
-                snap.set(flat[j], { seq, json: JSON.stringify(doc) });
+                cols[c].push({ id: flat[j], seq, doc });
             }
+        });
+        return { version, meta, cols };
+    }
+
+    // Replace memory with a database snapshot: { version, meta (JSON), cols: { c: [{ id, seq, doc }] } }.
+    apply({ version, meta, cols }) {
+        this.data = { meta: meta ? JSON.parse(meta) : {} };
+        this.snapshot = { meta: meta || '{}', cols: {} };
+        COLLECTIONS.forEach((c) => {
+            const rows = cols[c] || [];
             rows.sort((a, b) => a.seq - b.seq || String(a.doc.id).localeCompare(String(b.doc.id), undefined, { numeric: true }));
             this.data[c] = rows.map((r) => r.doc);
-            this.snapshot.cols[c] = snap;
+            this.snapshot.cols[c] = new Map(rows.map((r) => [r.id, { seq: r.seq, json: JSON.stringify(r.doc) }]));
         });
         this.version = Number(version || 0);
     }
 
     // Write every record that changed since the last pull/push.
     async push() {
-        if (!this.redis) return 0;
-        const commands = [];
+        if (!this.remote) return 0;
+        const change = { cols: {} };
+        let writes = 0;
         const next = { meta: this.snapshot.meta, cols: {} };
         const metaJson = JSON.stringify(this.data.meta);
         if (metaJson !== this.snapshot.meta) {
-            commands.push(['SET', KEYS.meta, metaJson]);
+            change.meta = metaJson;
             next.meta = metaJson;
+            writes++;
         }
         COLLECTIONS.forEach((c) => {
             const prev = this.snapshot.cols[c];
@@ -113,25 +131,36 @@ class Store {
                 const old = prev.get(doc.id);
                 const seq = old ? old.seq : nextSeq();
                 snap.set(doc.id, { seq, json });
-                if (!old || old.json !== json) upserts.push(doc.id, `[${seq},${json}]`);
+                if (!old || old.json !== json) upserts.push({ id: doc.id, seq, json });
             });
             const removed = [...prev.keys()].filter((id) => !snap.has(id));
-            if (upserts.length) commands.push(['HSET', KEYS.col(c), ...upserts]);
-            if (removed.length) commands.push(['HDEL', KEYS.col(c), ...removed]);
+            if (upserts.length || removed.length) change.cols[c] = { upserts, removed };
+            writes += (upserts.length ? 1 : 0) + (removed.length ? 1 : 0);
             next.cols[c] = snap;
         });
-        if (!commands.length) return 0;
-        const results = await this.redis.transaction([...commands, ['INCR', KEYS.version]]);
-        const version = Number(results[results.length - 1]);
+        if (!writes) return 0;
+        const version = this.mongo ? await this.mongo.write(change) : await this.writeRedis(change);
         this.snapshot = next;
         // If someone else wrote in between, our memory is missing their
         // changes: force a full reload on the next pull.
         this.version = this.version !== null && version === this.version + 1 ? version : null;
-        return commands.length;
+        return writes;
+    }
+
+    async writeRedis({ meta, cols }) {
+        const commands = [];
+        if (meta !== undefined) commands.push(['SET', KEYS.meta, meta]);
+        Object.entries(cols).forEach(([c, { upserts, removed }]) => {
+            if (upserts.length) commands.push(['HSET', KEYS.col(c), ...upserts.flatMap((u) => [u.id, `[${u.seq},${u.json}]`])]);
+            if (removed.length) commands.push(['HDEL', KEYS.col(c), ...removed]);
+        });
+        const results = await this.redis.transaction([...commands, ['INCR', KEYS.version]]);
+        return Number(results[results.length - 1]);
     }
 
     // Run fn once across all instances (e.g. first-time seeding).
     async withInitLock(fn) {
+        if (this.mongo) return this.mongo.lock(fn);
         const [acquired] = await this.redis.pipeline([['SET', KEYS.lock, '1', 'NX', 'EX', '60']]);
         if (acquired !== 'OK') return false;
         try {
@@ -167,13 +196,13 @@ class Store {
 
     // Debounced so bursts of writes (e.g. seeding) hit the disk once.
     save() {
-        if (this.inMemory || this.redis) return;
+        if (this.inMemory || this.remote) return;
         clearTimeout(this.saveTimer);
         this.saveTimer = setTimeout(() => this.flush(), 50);
     }
 
     flush() {
-        if (this.inMemory || this.redis) return;
+        if (this.inMemory || this.remote) return;
         clearTimeout(this.saveTimer);
         fs.mkdirSync(path.dirname(this.file), { recursive: true });
         const tmp = `${this.file}.tmp`;
@@ -249,8 +278,13 @@ let instance = null;
 
 const getStore = () => {
     if (!instance) {
-        const redis = process.env.DB_FILE === ':memory:' ? null : redisConfig();
-        instance = new Store(undefined, { redis: redis ? createRedis(redis) : null });
+        const hosted = process.env.DB_FILE !== ':memory:';
+        const mongo = hosted && mongoConfig();
+        const redis = hosted && !mongo && redisConfig();
+        instance = new Store(undefined, {
+            mongo: mongo ? createMongo(mongo, COLLECTIONS) : null,
+            redis: redis ? createRedis(redis) : null
+        });
     }
     return instance;
 };
