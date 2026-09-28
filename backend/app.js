@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const { auth, requireRole } = require('./middleware/auth');
 const { securityHeaders, notFoundApi, errorHandler } = require('./middleware/security');
+const { syncStore } = require('./middleware/sync');
 
 const createApp = () => {
     const app = express();
@@ -15,6 +16,7 @@ const createApp = () => {
     const origins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5173').split(',').map((s) => s.trim());
     app.use('/api', cors({ origin: origins, credentials: false }));
     app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
+    app.use('/api', syncStore);
 
     app.use('/api/public', require('./routes/public'));
     app.use('/api/auth', require('./routes/auth'));

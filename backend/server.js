@@ -7,7 +7,8 @@ const { createApp } = require('./app');
 const ai = require('./ai');
 
 const store = getStore();
-seed();
+// With a hosted database, seeding happens on the first request (middleware/sync.js).
+if (!store.remote) seed();
 
 const app = createApp();
 const PORT = process.env.PORT || 5000;
@@ -15,11 +16,11 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
     console.log(`AdaptPrep API running on http://localhost:${PORT}`);
     console.log(`AI provider: ${ai.status().label}`);
-    console.log(`Data file: ${store.inMemory ? 'in-memory' : store.file}`);
+    console.log(`Data: ${store.remote ? 'Upstash Redis' : store.inMemory ? 'in-memory' : store.file}`);
 });
 
 // Auto-submit tests whose timer ran out even if the student closed the tab.
-const sweeper = setInterval(sweepExpired, 30 * 1000);
+const sweeper = store.remote ? null : setInterval(sweepExpired, 30 * 1000);
 
 const shutdown = () => {
     clearInterval(sweeper);
