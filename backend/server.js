@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
     console.log(`AdaptPrep API running on http://localhost:${PORT}`);
     console.log(`AI provider: ${ai.status().label}`);
-    console.log(`Data: ${store.remote ? 'Upstash Redis' : store.inMemory ? 'in-memory' : store.file}`);
+    console.log(`Data: ${store.inMemory ? 'in-memory' : store.file}`);
 });
 
 // Auto-submit tests whose timer ran out even if the student closed the tab.

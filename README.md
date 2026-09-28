@@ -110,14 +110,14 @@ frontend/                 React 18 + Vite + React Router + Recharts
   src/styles/app.css      Design system (light/dark tokens, CVD-validated chart palette)
 ```
 
-Locally the datastore is a single JSON file. When Upstash Redis credentials are set, the same `Store` persists to Redis instead: each API request loads the latest data (only if it changed) and saves the records it changed before responding, so data survives serverless restarts and is shared across instances.
+Locally the datastore is a single JSON file. When `MONGODB_URI` (e.g. MongoDB Atlas) or Upstash Redis credentials are set, the same `Store` persists to that database instead: each API request loads the latest data (only if it changed) and saves the records it changed before responding, so data survives serverless restarts and is shared across instances.
 
 ## Deploying to Vercel
 
 `vercel.json` serves the built frontend as static files and runs the Express API as a serverless function (`api/index.js`) under `/api`.
 
 1. Import the repository in Vercel (root directory `./`).
-2. In the project, open **Storage → Create Database → Upstash for Redis** (free tier) and connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically.
+2. In the project, open **Storage → Create Database → MongoDB Atlas** (free tier) and connect it to the project. This adds `MONGODB_URI` automatically. (Upstash for Redis also works: it adds `KV_REST_API_URL`/`KV_REST_API_TOKEN`; MongoDB wins if both are set.)
 3. Add `JWT_SECRET` (a long random string) under **Environment Variables**.
 4. Redeploy. The first request seeds the question bank and demo workspace.
 
@@ -125,7 +125,7 @@ Without a database, Vercel falls back to a temporary file in `/tmp` and data res
 
 ## Configuration (`backend/.env`, all optional)
 
-See [`backend/.env.example`](backend/.env.example): `PORT`, `JWT_SECRET` (auto-generated and persisted if unset; set it in production), `JWT_EXPIRE`, `CORS_ORIGIN`, `DB_FILE` (`:memory:` for throwaway data), `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` or `KV_REST_API_URL`/`KV_REST_API_TOKEN` (use Upstash Redis instead of the file), `REDIS_PREFIX`, `SEED_DEMO=false` with `ADMIN_EMAIL`/`ADMIN_PASSWORD` for a clean install, `GEMINI_API_KEY`, `GEMINI_MODEL`.
+See [`backend/.env.example`](backend/.env.example): `PORT`, `JWT_SECRET` (auto-generated and persisted if unset; set it in production), `JWT_EXPIRE`, `CORS_ORIGIN`, `DB_FILE` (`:memory:` for throwaway data), `MONGODB_URI`/`MONGODB_DB` (use MongoDB, e.g. Atlas, instead of the file), `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` or `KV_REST_API_URL`/`KV_REST_API_TOKEN` (use Upstash Redis instead of the file), `REDIS_PREFIX`, `SEED_DEMO=false` with `ADMIN_EMAIL`/`ADMIN_PASSWORD` for a clean install, `GEMINI_API_KEY`, `GEMINI_MODEL`.
 
 ## License
 
