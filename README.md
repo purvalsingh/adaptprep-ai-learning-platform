@@ -114,7 +114,7 @@ Locally the datastore is a single JSON file. When Upstash Redis credentials are 
 
 ## Deploying to Vercel
 
-`vercel.json` deploys the frontend at `/` and the Express API at `/api` as one project.
+`vercel.json` serves the built frontend as static files and runs the Express API as a serverless function (`api/index.js`) under `/api`.
 
 1. Import the repository in Vercel (root directory `./`).
 2. In the project, open **Storage → Create Database → Upstash for Redis** (free tier) and connect it to the project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically.
